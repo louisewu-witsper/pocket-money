@@ -1,34 +1,1031 @@
-零用金管理
 
-👑 Henry
-🏦 Stanley
-CURRENT BALANCE
-Henry · CEO
-$0
-$0
-本月支出
-$0
-累計儲值
-0
-總筆數
-快速金額
-$50
-$100
-$150
-$200
-💸 支出
-💰 儲值
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>零用金管理</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700;900&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #f5f5f3;
+    --surface: #ffffff;
+    --surface2: #f0f0ee;
+    --border: #e0e0dc;
+    --accent-h: #c8960a;
+    --accent-s: #0880a8;
+    --text: #1a1a1a;
+    --text-muted: #999;
+    --danger: #d93030;
+    --success: #1ea870;
+    --radius: 14px;
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Noto Sans TC', sans-serif;
+    min-height: 100vh;
+    padding: 24px 16px 80px;
+  }
 
-＋ 新增記錄
-交易記錄
-全部
-本月
-儲值
-💬
-Slack 通知訊息
-一鍵複製，直接貼到 Slack
+  /* ── HEADER ── */
+  header {
+    text-align: center;
+    margin-bottom: 32px;
+  }
+  header h1 {
+    font-size: 13px;
+    letter-spacing: 4px;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    margin-bottom: 4px;
+  }
+  header p {
+    font-size: 11px;
+    color: #555;
+    font-family: 'DM Mono', monospace;
+  }
 
-📋 複製通知訊息
-⚙
+  /* ── TABS ── */
+  .tabs {
+    display: flex;
+    background: var(--surface);
+    border-radius: 50px;
+    padding: 4px;
+    max-width: 340px;
+    margin: 0 auto 28px;
+    gap: 4px;
+  }
+  .tab-btn {
+    flex: 1;
+    padding: 10px;
+    border: none;
+    border-radius: 50px;
+    background: transparent;
+    color: var(--text-muted);
+    font-family: 'Noto Sans TC', sans-serif;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all .2s;
+  }
+  .tab-btn.active-h { background: var(--accent-h); color: #000; }
+  .tab-btn.active-s { background: var(--accent-s); color: #000; }
 
+  /* ── BALANCE CARD ── */
+  .balance-card {
+    border-radius: 20px;
+    padding: 28px 24px 20px;
+    margin-bottom: 20px;
+    position: relative;
+    overflow: hidden;
+  }
+  .balance-card.henry { background: linear-gradient(135deg, #fffbea 0%, #fff8d6 100%); border: 1px solid #f0d060; }
+  .balance-card.stanley { background: linear-gradient(135deg, #eaf6ff 0%, #d6eeff 100%); border: 1px solid #60b8e0; }
+  .balance-card::before {
+    content: '';
+    position: absolute;
+    top: -40px; right: -40px;
+    width: 150px; height: 150px;
+    border-radius: 50%;
+    opacity: .06;
+  }
+  .balance-card.henry::before { background: var(--accent-h); }
+  .balance-card.stanley::before { background: var(--accent-s); }
+
+  .balance-label {
+    font-size: 11px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    margin-bottom: 6px;
+  }
+  .balance-card.henry .balance-label { color: #a07010; }
+  .balance-card.stanley .balance-label { color: #1070a0; }
+
+  .balance-name {
+    font-size: 15px;
+    font-weight: 700;
+    margin-bottom: 12px;
+    color: #555;
+  }
+
+  .balance-amount {
+    font-family: 'DM Mono', monospace;
+    font-size: 44px;
+    font-weight: 500;
+    line-height: 1;
+    margin-bottom: 16px;
+  }
+  .balance-card.henry .balance-amount { color: var(--accent-h); }
+  .balance-card.stanley .balance-amount { color: var(--accent-s); }
+  .balance-amount.low { color: var(--danger) !important; animation: pulse 1.5s ease infinite; }
+
+  @keyframes pulse {
+    0%,100% { opacity: 1; }
+    50% { opacity: .5; }
+  }
+
+  .balance-low-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: rgba(255,92,92,.15);
+    border: 1px solid rgba(255,92,92,.3);
+    border-radius: 50px;
+    padding: 4px 12px;
+    font-size: 11px;
+    color: var(--danger);
+    margin-bottom: 16px;
+  }
+
+  .stats-row {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+  }
+  .stat-box {
+    background: rgba(0,0,0,.05);
+    border-radius: 10px;
+    padding: 10px;
+    text-align: center;
+  }
+  .stat-box .sv { font-family: 'DM Mono', monospace; font-size: 16px; font-weight: 500; }
+  .stat-box .sk { font-size: 10px; color: var(--text-muted); margin-top: 2px; }
+  .balance-card.henry .sv { color: var(--accent-h); }
+  .balance-card.stanley .sv { color: var(--accent-s); }
+
+  /* ── QUICK BTNS ── */
+  .section-title {
+    font-size: 11px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    margin-bottom: 12px;
+  }
+
+  .quick-btns {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 8px;
+    margin-bottom: 20px;
+  }
+  .quick-btn {
+    padding: 14px 8px;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    background: var(--surface);
+    color: var(--text);
+    font-family: 'DM Mono', monospace;
+    font-size: 15px;
+    cursor: pointer;
+    transition: all .15s;
+  }
+  .quick-btn:active { transform: scale(.95); }
+  .henry-active .quick-btn:hover { background: var(--accent-h); color: #000; border-color: var(--accent-h); }
+  .stanley-active .quick-btn:hover { background: var(--accent-s); color: #000; border-color: var(--accent-s); }
+
+  /* ── INPUT AREA ── */
+  .input-area {
+    background: var(--surface);
+    border-radius: var(--radius);
+    padding: 16px;
+    margin-bottom: 20px;
+    border: 1px solid var(--border);
+  }
+  .input-row { display: flex; gap: 8px; margin-bottom: 10px; }
+  .input-field {
+    flex: 1;
+    background: #f8f8f6;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 12px 14px;
+    color: var(--text);
+    font-family: 'Noto Sans TC', sans-serif;
+    font-size: 14px;
+    outline: none;
+    transition: border-color .2s;
+  }
+  .input-field:focus { border-color: #aaa; }
+  .input-field::placeholder { color: #bbb; }
+  .input-amount {
+    width: 110px;
+    flex: none;
+    font-family: 'DM Mono', monospace;
+    font-size: 16px;
+  }
+
+  .type-toggle {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 10px;
+  }
+  .type-btn {
+    flex: 1;
+    padding: 10px;
+    border-radius: 10px;
+    border: 1px solid var(--border);
+    background: transparent;
+    color: var(--text-muted);
+    font-family: 'Noto Sans TC', sans-serif;
+    font-size: 13px;
+    cursor: pointer;
+    transition: all .2s;
+  }
+  .type-btn.active-expense { background: rgba(255,92,92,.15); border-color: var(--danger); color: var(--danger); }
+  .type-btn.active-topup-h { background: rgba(240,192,64,.15); border-color: var(--accent-h); color: var(--accent-h); }
+  .type-btn.active-topup-s { background: rgba(96,200,240,.15); border-color: var(--accent-s); color: var(--accent-s); }
+
+  .add-btn {
+    width: 100%;
+    padding: 14px;
+    border: none;
+    border-radius: 10px;
+    font-family: 'Noto Sans TC', sans-serif;
+    font-size: 15px;
+    font-weight: 700;
+    cursor: pointer;
+    letter-spacing: 1px;
+    transition: all .2s;
+  }
+  .henry-active .add-btn { background: var(--accent-h); color: #000; }
+  .stanley-active .add-btn { background: var(--accent-s); color: #000; }
+  .add-btn:active { transform: scale(.98); }
+
+  /* ── RECORDS ── */
+  .records-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+  }
+  .filter-btns {
+    display: flex;
+    gap: 6px;
+  }
+  .filter-btn {
+    padding: 4px 10px;
+    border-radius: 50px;
+    border: 1px solid var(--border);
+    background: transparent;
+    color: var(--text-muted);
+    font-size: 11px;
+    cursor: pointer;
+    transition: all .2s;
+  }
+  .filter-btn.active { background: var(--surface2); color: var(--text); border-color: #555; }
+
+  .record-list { display: flex; flex-direction: column; gap: 6px; }
+
+  .record-item {
+    background: var(--surface);
+    border-radius: 12px;
+    padding: 14px 16px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    border: 1px solid var(--border);
+    animation: fadeIn .2s ease;
+  }
+  @keyframes fadeIn { from { opacity:0; transform: translateY(6px); } to { opacity:1; transform: none; } }
+
+  .record-icon {
+    width: 36px; height: 36px;
+    border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 16px;
+    flex-shrink: 0;
+  }
+  .icon-expense { background: rgba(255,92,92,.12); }
+  .icon-topup { background: rgba(76,222,158,.12); }
+
+  .record-info { flex: 1; min-width: 0; }
+  .record-desc {
+    font-size: 14px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .record-date { font-size: 11px; color: var(--text-muted); margin-top: 2px; font-family: 'DM Mono', monospace; }
+
+  .record-amount {
+    font-family: 'DM Mono', monospace;
+    font-size: 16px;
+    font-weight: 500;
+    flex-shrink: 0;
+  }
+  .amount-expense { color: var(--danger); }
+  .amount-topup { color: var(--success); }
+
+  .record-del {
+    background: none;
+    border: none;
+    color: #444;
+    cursor: pointer;
+    font-size: 16px;
+    padding: 4px;
+    border-radius: 6px;
+    transition: color .2s;
+  }
+  .record-del:hover { color: var(--danger); }
+
+  .empty-state {
+    text-align: center;
+    padding: 40px 20px;
+    color: var(--text-muted);
+    font-size: 13px;
+  }
+  .empty-state .emoji { font-size: 32px; margin-bottom: 10px; }
+
+  /* ── SLACK SECTION ── */
+  .slack-section {
+    background: var(--surface);
+    border-radius: var(--radius);
+    padding: 16px;
+    border: 1px solid var(--border);
+    margin-top: 20px;
+  }
+  .slack-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 14px;
+  }
+  .slack-logo {
+    width: 28px; height: 28px;
+    background: #4A154B;
+    border-radius: 6px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 14px;
+  }
+  .slack-title { font-size: 13px; font-weight: 700; }
+  .slack-sub { font-size: 11px; color: var(--text-muted); }
+
+  .slack-config { display: flex; flex-direction: column; gap: 8px; margin-bottom: 12px; }
+  .slack-config .input-field { width: 100%; }
+
+  .slack-preview {
+    background: #f8f8f6;
+    border-radius: 10px;
+    padding: 12px;
+    font-size: 12px;
+    line-height: 1.7;
+    border: 1px solid var(--border);
+    color: #444;
+    margin-bottom: 12px;
+    font-family: 'DM Mono', monospace;
+    white-space: pre-wrap;
+  }
+  .slack-btn {
+    width: 100%;
+    padding: 12px;
+    border: none;
+    border-radius: 10px;
+    background: #4A154B;
+    color: #fff;
+    font-family: 'Noto Sans TC', sans-serif;
+    font-size: 14px;
+    cursor: pointer;
+    transition: opacity .2s;
+    font-weight: 500;
+  }
+  .slack-btn:hover { opacity: .85; }
+  .slack-btn:disabled { opacity: .4; cursor: not-allowed; }
+
+  .loading-bar {
+    display: none;
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, var(--accent-h), var(--accent-s));
+    z-index: 999;
+    animation: loading 1.2s ease infinite;
+  }
+  @keyframes loading {
+    0% { transform: translateX(-100%); }
+    100% { transform: translateX(100%); }
+  }
+    position: fixed;
+    bottom: 30px;
+    left: 50%;
+    transform: translateX(-50%) translateY(80px);
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    color: var(--text);
+    padding: 12px 20px;
+    border-radius: 50px;
+    font-size: 13px;
+    z-index: 999;
+    transition: transform .3s cubic-bezier(.34,1.56,.64,1);
+    pointer-events: none;
+    white-space: nowrap;
+  }
+  .toast.show { transform: translateX(-50%) translateY(0); }
+
+  /* ── SETTINGS BTN ── */
+  .settings-fab {
+    position: fixed;
+    bottom: 24px;
+    right: 20px;
+    width: 44px; height: 44px;
+    border-radius: 50%;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    color: var(--text-muted);
+    font-size: 18px;
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer;
+    transition: all .2s;
+    z-index: 10;
+  }
+  .settings-fab:hover { color: var(--text); border-color: #555; }
+
+  /* ── SETTINGS PANEL ── */
+  .settings-overlay {
+    display: none;
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,.8);
+    z-index: 100;
+    align-items: flex-end;
+  }
+  .settings-overlay.open { display: flex; }
+  .settings-panel {
+    background: #ffffff;
+    border-radius: 20px 20px 0 0;
+    padding: 24px;
+    width: 100%;
+    max-height: 80vh;
+    overflow-y: auto;
+  }
+  .settings-panel h2 { font-size: 16px; font-weight: 700; margin-bottom: 20px; }
+  .settings-row {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-bottom: 16px;
+  }
+  .settings-row label { font-size: 12px; color: var(--text-muted); }
+  .close-settings {
+    width: 100%;
+    padding: 14px;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    background: transparent;
+    color: var(--text);
+    font-family: 'Noto Sans TC', sans-serif;
+    font-size: 14px;
+    cursor: pointer;
+    margin-top: 8px;
+  }
+</style>
+</head>
+<body>
+
+<div class="loading-bar" id="loading-bar"></div>
+
+<header>
+  <h1>零用金管理</h1>
+  <p id="today-date"></p>
+</header>
+
+<!-- TABS -->
+<div class="tabs">
+  <button class="tab-btn active-h" onclick="switchPerson('henry')">👑 Henry</button>
+  <button class="tab-btn" onclick="switchPerson('stanley')">🏦 Stanley</button>
+</div>
+
+<div id="app-henry" class="henry-active">
+  <!-- Balance Card -->
+  <div class="balance-card henry">
+    <div class="balance-label">Current Balance</div>
+    <div class="balance-name">Henry · CEO</div>
+    <div class="balance-amount" id="h-balance">$0</div>
+    <div id="h-low-badge" class="balance-low-badge" style="display:none">⚠️ 餘額偏低，請儲值</div>
+    <div class="stats-row">
+      <div class="stat-box">
+        <div class="sv" id="h-month-spend">$0</div>
+        <div class="sk">本月支出</div>
+      </div>
+      <div class="stat-box">
+        <div class="sv" id="h-total-topup">$0</div>
+        <div class="sk">累計儲值</div>
+      </div>
+      <div class="stat-box">
+        <div class="sv" id="h-count">0</div>
+        <div class="sk">總筆數</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Quick Amount -->
+  <div class="section-title">快速金額</div>
+  <div class="quick-btns">
+    <button class="quick-btn" onclick="setAmount('henry', 50)">$50</button>
+    <button class="quick-btn" onclick="setAmount('henry', 100)">$100</button>
+    <button class="quick-btn" onclick="setAmount('henry', 150)">$150</button>
+    <button class="quick-btn" onclick="setAmount('henry', 200)">$200</button>
+  </div>
+
+  <!-- Input Area -->
+  <div class="input-area">
+    <div class="type-toggle">
+      <button class="type-btn active-expense" id="h-type-exp" onclick="setType('henry','expense')">💸 支出</button>
+      <button class="type-btn" id="h-type-top" onclick="setType('henry','topup')">💰 儲值</button>
+    </div>
+    <div class="input-row">
+      <input class="input-field" id="h-desc" placeholder="描述（例：便當、咖啡）" />
+      <input class="input-field input-amount" id="h-amount" type="number" placeholder="金額" />
+    </div>
+    <button class="add-btn" onclick="addRecord('henry')">＋ 新增記錄</button>
+  </div>
+
+  <!-- Records -->
+  <div class="records-header">
+    <div class="section-title" style="margin:0">交易記錄</div>
+    <div class="filter-btns">
+      <button class="filter-btn active" onclick="setFilter('henry','all',this)">全部</button>
+      <button class="filter-btn" onclick="setFilter('henry','month',this)">本月</button>
+      <button class="filter-btn" onclick="setFilter('henry','topup',this)">儲值</button>
+    </div>
+  </div>
+  <div class="record-list" id="h-records"></div>
+
+  <!-- Slack -->
+  <div class="slack-section">
+    <div class="slack-header">
+      <div class="slack-logo">💬</div>
+      <div>
+        <div class="slack-title">Slack 通知訊息</div>
+        <div class="slack-sub">一鍵複製，直接貼到 Slack</div>
+      </div>
+    </div>
+    <div class="slack-preview" id="h-slack-preview"></div>
+    <button class="slack-btn" onclick="copySlack('henry')" id="h-slack-btn">📋 複製通知訊息</button>
+  </div>
+</div>
+
+<!-- STANLEY -->
+<div id="app-stanley" style="display:none">
+  <div class="balance-card stanley">
+    <div class="balance-label">Current Balance</div>
+    <div class="balance-name">Stanley · CFO</div>
+    <div class="balance-amount" id="s-balance">$0</div>
+    <div id="s-low-badge" class="balance-low-badge" style="display:none">⚠️ 餘額偏低，請儲值</div>
+    <div class="stats-row">
+      <div class="stat-box">
+        <div class="sv" id="s-month-spend">$0</div>
+        <div class="sk">本月支出</div>
+      </div>
+      <div class="stat-box">
+        <div class="sv" id="s-total-topup">$0</div>
+        <div class="sk">累計儲值</div>
+      </div>
+      <div class="stat-box">
+        <div class="sv" id="s-count">0</div>
+        <div class="sk">總筆數</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section-title">快速金額</div>
+  <div class="quick-btns stanley-active">
+    <button class="quick-btn" onclick="setAmount('stanley', 50)">$50</button>
+    <button class="quick-btn" onclick="setAmount('stanley', 100)">$100</button>
+    <button class="quick-btn" onclick="setAmount('stanley', 150)">$150</button>
+    <button class="quick-btn" onclick="setAmount('stanley', 200)">$200</button>
+  </div>
+
+  <div class="input-area">
+    <div class="type-toggle">
+      <button class="type-btn active-expense" id="s-type-exp" onclick="setType('stanley','expense')">💸 支出</button>
+      <button class="type-btn" id="s-type-top" onclick="setType('stanley','topup')">💰 儲值</button>
+    </div>
+    <div class="input-row">
+      <input class="input-field" id="s-desc" placeholder="描述（例：果昔、潤餅）" />
+      <input class="input-field input-amount" id="s-amount" type="number" placeholder="金額" />
+    </div>
+    <button class="add-btn stanley-active" onclick="addRecord('stanley')">＋ 新增記錄</button>
+  </div>
+
+  <div class="records-header">
+    <div class="section-title" style="margin:0">交易記錄</div>
+    <div class="filter-btns">
+      <button class="filter-btn active" onclick="setFilter('stanley','all',this)">全部</button>
+      <button class="filter-btn" onclick="setFilter('stanley','month',this)">本月</button>
+      <button class="filter-btn" onclick="setFilter('stanley','topup',this)">儲值</button>
+    </div>
+  </div>
+  <div class="record-list" id="s-records"></div>
+
+  <div class="slack-section">
+    <div class="slack-header">
+      <div class="slack-logo">💬</div>
+      <div>
+        <div class="slack-title">Slack 通知訊息</div>
+        <div class="slack-sub">一鍵複製，直接貼到 Slack</div>
+      </div>
+    </div>
+    <div class="slack-preview" id="s-slack-preview"></div>
+    <button class="slack-btn" onclick="copySlack('stanley')" id="s-slack-btn">📋 複製通知訊息</button>
+  </div>
+</div>
+
+<!-- Settings FAB -->
+<button class="settings-fab" onclick="openSettings()">⚙</button>
+
+<!-- Settings Overlay -->
+<div class="settings-overlay" id="settings-overlay" onclick="closeSettingsOutside(event)">
+  <div class="settings-panel">
+    <h2>⚙️ 設定</h2>
+    <div class="settings-row">
+      <label>低餘額警示門檻（預設 $200）</label>
+      <input class="input-field" id="threshold-input" type="number" placeholder="200" />
+    </div>
+    <button class="close-settings" onclick="saveSettings()">✓ 儲存並關閉</button>
+  </div>
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+
+<script>
+// ── CONFIG ──
+const API_URL = 'https://script.google.com/macros/s/AKfycbwmrq5Vzd9gV8IGEFNtTSpLv5hVUlI7Npl_qzDtAjyZJD15zCZXn3gpsx-TGaJ4KtsO/exec';
+const HENRY_NAME = 'Henry';
+const STANLEY_NAME = 'Stanley';
+const DEFAULT_THRESHOLD = 200;
+
+// ── STATE (in-memory, always synced from Sheets) ──
+let state = {
+  henry: { records: [], type: 'expense' },
+  stanley: { records: [], type: 'expense' },
+  threshold: parseInt(localStorage.getItem('pm_threshold') || '200'),
+};
+let currentFilter = { henry: 'all', stanley: 'all' };
+
+// ── HISTORICAL DATA (first-time import) ──
+const HISTORICAL_RECORDS = [
+  {person:'henry',id:'1700000000000',date:'2026-01-20',desc:'H 儲值零用金',amount:1000,type:'topup'},
+  {person:'henry',id:'1700000000001',date:'2026-01-20',desc:'H 午餐麻辣燙',amount:130,type:'expense'},
+  {person:'henry',id:'1700000000002',date:'2026-01-21',desc:'H&S&L 潤餅+拿鐵',amount:300,type:'expense'},
+  {person:'henry',id:'1700000000003',date:'2026-01-22',desc:'H午餐 便當+果昔',amount:179,type:'expense'},
+  {person:'henry',id:'1700000000004',date:'2026-01-23',desc:'H午餐 便當*2+果昔',amount:379,type:'expense'},
+  {person:'henry',id:'1700000000005',date:'2026-01-26',desc:'H午餐 滷肉飯50 羹70 咖啡50',amount:170,type:'expense'},
+  {person:'henry',id:'1700000000006',date:'2026-01-26',desc:'H晚餐 小漢堡+夥伴飲料',amount:227,type:'expense'},
+  {person:'henry',id:'1700000000007',date:'2026-01-28',desc:'H午餐 健康便當100+果昔79',amount:179,type:'expense'},
+  {person:'henry',id:'1700000000008',date:'2026-01-29',desc:'H午餐 麻辣燙120+麵包75',amount:195,type:'expense'},
+  {person:'henry',id:'1700000000009',date:'2026-01-30',desc:'Henry 健康餐$100',amount:100,type:'expense'},
+  {person:'henry',id:'1700000000010',date:'2026-02-02',desc:'Henry+Stanley+Lev 午餐各150',amount:300,type:'expense'},
+  {person:'henry',id:'1700000000011',date:'2026-02-02',desc:'Henry 咖啡50',amount:50,type:'expense'},
+  {person:'henry',id:'1700000000012',date:'2026-02-03',desc:'Henry 潤餅70+Janet潤餅70',amount:140,type:'expense'},
+  {person:'henry',id:'1700000000013',date:'2026-02-04',desc:'Henry 飯糰50+果昔79',amount:129,type:'expense'},
+  {person:'henry',id:'1700000000014',date:'2026-02-05',desc:'H 儲值零用金',amount:10000,type:'topup'},
+  {person:'henry',id:'1700000000015',date:'2026-02-05',desc:'H麻辣燙',amount:140,type:'expense'},
+  {person:'henry',id:'1700000000016',date:'2026-02-06',desc:'H 健康便當 午餐',amount:100,type:'expense'},
+  {person:'henry',id:'1700000000017',date:'2026-02-09',desc:'H潤餅+Morris潤餅',amount:140,type:'expense'},
+  {person:'henry',id:'1700000000018',date:'2026-02-10',desc:'H海鮮麵',amount:120,type:'expense'},
+  {person:'henry',id:'1700000000019',date:'2026-02-11',desc:'H+Julie午餐便當',amount:200,type:'expense'},
+  {person:'henry',id:'1700000000020',date:'2026-02-24',desc:'H茶葉蛋 20',amount:20,type:'expense'},
+  {person:'henry',id:'1700000000021',date:'2026-02-25',desc:'H胡椒餅+Brent',amount:160,type:'expense'},
+  {person:'henry',id:'1700000000022',date:'2026-02-26',desc:'H麻辣燙130',amount:130,type:'expense'},
+  {person:'henry',id:'1700000000023',date:'2026-02-26',desc:'H 儲值25,000 第一天',amount:25000,type:'topup'},
+  {person:'henry',id:'1700000000024',date:'2026-02-26',desc:'H 第一天發票支付Louise墊付',amount:14781,type:'expense'},
+  {person:'henry',id:'1700000000025',date:'2026-03-02',desc:'H 潤餅70',amount:70,type:'expense'},
+  {person:'henry',id:'1700000000026',date:'2026-03-03',desc:'H滷肉飯50+羹湯80',amount:130,type:'expense'},
+  {person:'henry',id:'1700000000027',date:'2026-03-05',desc:'H 潤餅70',amount:70,type:'expense'},
+  {person:'henry',id:'1700000000028',date:'2026-03-10',desc:'H麻辣燙130',amount:130,type:'expense'},
+  {person:'henry',id:'1700000000029',date:'2026-03-01',desc:'泰鼎晤談費10000',amount:10000,type:'expense'},
+  {person:'henry',id:'1700000000030',date:'2026-03-23',desc:'H午餐麵線甜不辣120',amount:120,type:'expense'},
+  {person:'henry',id:'1700000000031',date:'2026-03-30',desc:'H 相框＋列印13',amount:221,type:'expense'},
+  {person:'henry',id:'1700000000032',date:'2026-03-30',desc:'H 潤餅',amount:70,type:'expense'},
+  {person:'henry',id:'1700000000033',date:'2026-03-31',desc:'Henry 幫Louise買午餐',amount:100,type:'topup'},
+  {person:'henry',id:'1700000000034',date:'2026-04-01',desc:'Tiffany 歡送午餐',amount:6636,type:'expense'},
+  {person:'henry',id:'1700000000035',date:'2026-04-08',desc:'H 午餐健康便當',amount:100,type:'expense'},
+  {person:'henry',id:'1700000000036',date:'2026-04-10',desc:'Henry鹽水雞午餐+飲料',amount:180,type:'expense'},
+  {person:'stanley',id:'1700000000100',date:'2026-01-21',desc:'S 儲值零用金',amount:1100,type:'topup'},
+  {person:'stanley',id:'1700000000101',date:'2026-01-22',desc:'S午餐 果昔',amount:79,type:'expense'},
+  {person:'stanley',id:'1700000000102',date:'2026-01-23',desc:'S午餐 果昔',amount:79,type:'expense'},
+  {person:'stanley',id:'1700000000103',date:'2026-01-26',desc:'S午餐 滷肉飯50 咖啡50',amount:100,type:'expense'},
+  {person:'stanley',id:'1700000000104',date:'2026-01-28',desc:'S午餐 滷肉飯50+果昔79',amount:129,type:'expense'},
+  {person:'stanley',id:'1700000000105',date:'2026-01-29',desc:'S午餐 麵包75',amount:75,type:'expense'},
+  {person:'stanley',id:'1700000000106',date:'2026-01-30',desc:'Stanley 潤餅$65+果昔$79',amount:144,type:'expense'},
+  {person:'stanley',id:'1700000000107',date:'2026-02-02',desc:'Stanley+Lev 午餐各150',amount:150,type:'expense'},
+  {person:'stanley',id:'1700000000108',date:'2026-02-03',desc:'Stanley 潤餅$65+果昔$79',amount:144,type:'expense'},
+  {person:'stanley',id:'1700000000109',date:'2026-02-04',desc:'Stanley 飯糰50+果昔79',amount:129,type:'expense'},
+  {person:'stanley',id:'1700000000110',date:'2026-02-06',desc:'S果昔',amount:79,type:'expense'},
+  {person:'stanley',id:'1700000000111',date:'2026-02-09',desc:'S潤餅+果昔',amount:149,type:'expense'},
+  {person:'stanley',id:'1700000000112',date:'2026-02-24',desc:'S果昔 79',amount:79,type:'expense'},
+  {person:'stanley',id:'1700000000113',date:'2026-02-25',desc:'S果昔79+胡椒餅80',amount:159,type:'expense'},
+  {person:'stanley',id:'1700000000114',date:'2026-02-26',desc:'S果昔 79',amount:79,type:'expense'},
+  {person:'stanley',id:'1700000000115',date:'2026-03-02',desc:'S果昔79+潤餅70',amount:149,type:'expense'},
+  {person:'stanley',id:'1700000000116',date:'2026-03-03',desc:'S果昔79+滷肉飯50',amount:129,type:'expense'},
+  {person:'stanley',id:'1700000000117',date:'2026-03-05',desc:'S果昔79+潤餅70',amount:149,type:'expense'},
+  {person:'stanley',id:'1700000000118',date:'2026-03-06',desc:'S儲值',amount:1000,type:'topup'},
+  {person:'stanley',id:'1700000000119',date:'2026-03-12',desc:'S果昔79+潤餅70',amount:149,type:'expense'},
+  {person:'stanley',id:'1700000000120',date:'2026-03-23',desc:'S 飯糰65',amount:65,type:'expense'},
+  {person:'stanley',id:'1700000000121',date:'2026-03-30',desc:'S果昔79+潤餅70',amount:149,type:'expense'},
+  {person:'stanley',id:'1700000000122',date:'2026-03-30',desc:'S儲值',amount:2000,type:'topup'},
+  {person:'stanley',id:'1700000000123',date:'2026-04-08',desc:'S果昔79+手捲59',amount:138,type:'expense'},
+  {person:'stanley',id:'1700000000124',date:'2026-04-10',desc:'Stanley碧螺春手搖飲午餐',amount:50,type:'expense'},
+];
+
+// ── UTILS ──
+function fmt(n) { return '$' + Number(n).toLocaleString(); }
+function today() { return new Date().toISOString().split('T')[0]; }
+function fmtDate(iso) {
+  const d = new Date(iso);
+  return `${d.getMonth()+1}/${d.getDate()}`;
+}
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2500);
+}
+function setLoading(on) {
+  document.getElementById('loading-bar').style.display = on ? 'block' : 'none';
+}
+
+// ── GOOGLE SHEETS API ──
+async function apiGet() {
+  const res = await fetch(API_URL + '?t=' + Date.now());
+  const json = await res.json();
+  return json.data || [];
+}
+
+async function apiAction(params) {
+  const url = API_URL + '?' + new URLSearchParams(params).toString();
+  await fetch(url);
+}
+
+// ── LOAD FROM SHEETS ──
+async function loadFromSheets() {
+  setLoading(true);
+  try {
+    const rows = await apiGet();
+    if (rows.length === 0) {
+      showToast('⏳ 首次載入，匯入歷史資料...');
+      // Send records one by one to avoid URL length limit
+      for (const r of HISTORICAL_RECORDS) {
+        await apiAction({
+          action: 'add',
+          person: r.person,
+          id: r.id,
+          date: r.date,
+          desc: r.desc,
+          amount: r.amount,
+          type: r.type
+        });
+      }
+      showToast('✅ 歷史資料匯入完成！');
+      await new Promise(res => setTimeout(res, 1000));
+      const rows2 = await apiGet();
+      populateState(rows2);
+    } else {
+      populateState(rows);
+    }
+  } catch(e) {
+    showToast('⚠️ 無法連線，顯示本機快取');
+    loadLocalCache();
+  }
+  setLoading(false);
+  render('henry');
+  render('stanley');
+}
+
+function populateState(rows) {
+  state.henry.records = [];
+  state.stanley.records = [];
+  rows.forEach(r => {
+    if (!r.person || !r.id) return;
+    const rec = {
+      id: String(r.id),
+      date: String(r.date),
+      desc: String(r.desc || ''),
+      amount: Number(r.amount),
+      type: String(r.type)
+    };
+    if (r.person === 'henry') state.henry.records.push(rec);
+    else if (r.person === 'stanley') state.stanley.records.push(rec);
+  });
+  saveLocalCache();
+}
+
+function saveLocalCache() {
+  localStorage.setItem('pm_cache', JSON.stringify({
+    henry: state.henry.records,
+    stanley: state.stanley.records
+  }));
+}
+
+function loadLocalCache() {
+  try {
+    const c = JSON.parse(localStorage.getItem('pm_cache') || '{}');
+    if (c.henry) state.henry.records = c.henry;
+    if (c.stanley) state.stanley.records = c.stanley;
+  } catch(e) {}
+}
+
+// ── COMPUTE ──
+function getBalance(person) {
+  return state[person].records.reduce((sum, r) =>
+    r.type === 'topup' ? sum + r.amount : sum - r.amount, 0);
+}
+function getMonthSpend(person) {
+  const ym = new Date().toISOString().slice(0,7);
+  return state[person].records
+    .filter(r => r.type === 'expense' && r.date.startsWith(ym))
+    .reduce((s, r) => s + r.amount, 0);
+}
+function getTotalTopup(person) {
+  return state[person].records
+    .filter(r => r.type === 'topup')
+    .reduce((s, r) => s + r.amount, 0);
+}
+
+// ── RENDER ──
+function render(person) {
+  const p = person[0];
+  const balance = getBalance(person);
+  const isLow = balance < state.threshold;
+  const balEl = document.getElementById(`${p}-balance`);
+  balEl.textContent = fmt(balance);
+  balEl.className = 'balance-amount' + (isLow ? ' low' : '');
+  document.getElementById(`${p}-low-badge`).style.display = isLow ? 'inline-flex' : 'none';
+  document.getElementById(`${p}-month-spend`).textContent = fmt(getMonthSpend(person));
+  document.getElementById(`${p}-total-topup`).textContent = fmt(getTotalTopup(person));
+  document.getElementById(`${p}-count`).textContent = state[person].records.length;
+  updateSlackPreview(person);
+  renderRecords(person, currentFilter[person]);
+}
+
+function renderRecords(person, filter) {
+  const p = person[0];
+  const container = document.getElementById(`${p}-records`);
+  let records = [...state[person].records].reverse();
+  if (filter === 'month') {
+    const ym = new Date().toISOString().slice(0,7);
+    records = records.filter(r => r.date.startsWith(ym));
+  } else if (filter === 'topup') {
+    records = records.filter(r => r.type === 'topup');
+  }
+  if (records.length === 0) {
+    container.innerHTML = `<div class="empty-state"><div class="emoji">📭</div>暫無記錄</div>`;
+    return;
+  }
+  container.innerHTML = records.map(r => `
+    <div class="record-item">
+      <div class="record-icon ${r.type === 'topup' ? 'icon-topup' : 'icon-expense'}">
+        ${r.type === 'topup' ? '💰' : '🛒'}
+      </div>
+      <div class="record-info">
+        <div class="record-desc">${r.desc || '（無描述）'}</div>
+        <div class="record-date">${fmtDate(r.date)}</div>
+      </div>
+      <div class="record-amount ${r.type === 'topup' ? 'amount-topup' : 'amount-expense'}">
+        ${r.type === 'topup' ? '+' : '-'}${fmt(r.amount)}
+      </div>
+      <button class="record-del" onclick="deleteRecord('${person}','${r.id}')">✕</button>
+    </div>
+  `).join('');
+}
+
+// ── ACTIONS ──
+function switchPerson(person) {
+  const tabs = document.querySelectorAll('.tab-btn');
+  tabs[0].className = 'tab-btn' + (person==='henry' ? ' active-h' : '');
+  tabs[1].className = 'tab-btn' + (person==='stanley' ? ' active-s' : '');
+  document.getElementById('app-henry').style.display = person === 'henry' ? '' : 'none';
+  document.getElementById('app-stanley').style.display = person === 'stanley' ? '' : 'none';
+}
+
+function setAmount(person, amt) {
+  document.getElementById(`${person[0]}-amount`).value = amt;
+}
+
+function setType(person, type) {
+  const p = person[0];
+  state[person].type = type;
+  document.getElementById(`${p}-type-exp`).className = 'type-btn' + (type==='expense' ? ' active-expense' : '');
+  document.getElementById(`${p}-type-top`).className = 'type-btn' + (type==='topup' ? (person==='henry' ? ' active-topup-h' : ' active-topup-s') : '');
+}
+
+async function addRecord(person) {
+  const p = person[0];
+  const desc = document.getElementById(`${p}-desc`).value.trim();
+  const amount = parseFloat(document.getElementById(`${p}-amount`).value);
+  const type = state[person].type;
+  if (!amount || amount <= 0) { showToast('⚠️ 請輸入有效金額'); return; }
+
+  const record = {
+    person,
+    id: Date.now().toString(),
+    date: today(),
+    desc: desc || (type === 'topup' ? '儲值' : '支出'),
+    amount,
+    type
+  };
+
+  // Optimistic update
+  state[person].records.push(record);
+  saveLocalCache();
+  render(person);
+  document.getElementById(`${p}-desc`).value = '';
+  document.getElementById(`${p}-amount`).value = '';
+  showToast(type === 'topup' ? `💰 已儲值 ${fmt(amount)}` : `✓ 已記錄 ${fmt(amount)}`);
+
+  // Sync to Sheets
+  await apiAction({
+    action: 'add',
+    person: record.person,
+    id: record.id,
+    date: record.date,
+    desc: record.desc,
+    amount: record.amount,
+    type: record.type
+  });
+
+  // Check low balance
+  if (getBalance(person) < state.threshold) {
+    showToast(`⚠️ ${person === 'henry' ? 'Henry' : 'Stanley'} 餘額偏低！`);
+  }
+}
+
+async function deleteRecord(person, id) {
+  state[person].records = state[person].records.filter(r => r.id !== id);
+  saveLocalCache();
+  render(person);
+  renderRecords(person, currentFilter[person]);
+  showToast('已刪除');
+  await apiAction({ action: 'delete', id });
+}
+
+function setFilter(person, filter, btn) {
+  currentFilter[person] = filter;
+  const p = person[0];
+  document.querySelectorAll(`#${p === 'h' ? 'app-henry' : 'app-stanley'} .filter-btn`).forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  renderRecords(person, filter);
+}
+
+// ── SLACK ──
+function getSlackMessage(person) {
+  const name = person === 'henry' ? HENRY_NAME : STANLEY_NAME;
+  const balance = getBalance(person);
+  const recent = [...state[person].records]
+    .filter(r => r.type === 'expense').slice(-5).reverse()
+    .map(r => `• ${fmtDate(r.date)} ${r.desc} ${fmt(r.amount)}`).join('\n');
+  return `💰 零用錢餘額提醒：${name} 的零用錢僅剩 ${fmt(balance)}，麻煩請協助儲值，謝謝！🙏\n\n📋 最近消費明細：\n${recent || '（無近期記錄）'}`;
+}
+
+function updateSlackPreview(person) {
+  const el = document.getElementById(`${person[0]}-slack-preview`);
+  if (el) el.textContent = getSlackMessage(person);
+}
+
+async function copySlack(person) {
+  const p = person[0];
+  const text = getSlackMessage(person);
+  const btn = document.getElementById(`${p}-slack-btn`);
+  try {
+    await navigator.clipboard.writeText(text);
+  } catch(e) {
+    const ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select(); document.execCommand('copy'); document.body.removeChild(ta);
+  }
+  btn.textContent = '✅ 已複製！貼到 Slack 吧';
+  showToast('✅ 通知訊息已複製！');
+  setTimeout(() => { btn.textContent = '📋 複製通知訊息'; }, 2500);
+}
+
+// ── SETTINGS ──
+function openSettings() {
+  document.getElementById('threshold-input').value = state.threshold;
+  document.getElementById('settings-overlay').classList.add('open');
+}
+
+function saveSettings() {
+  const t = parseInt(document.getElementById('threshold-input').value);
+  if (t > 0) { state.threshold = t; localStorage.setItem('pm_threshold', t); }
+  render('henry'); render('stanley');
+  document.getElementById('settings-overlay').classList.remove('open');
+  showToast('✓ 設定已儲存');
+}
+
+function closeSettingsOutside(e) {
+  if (e.target === document.getElementById('settings-overlay'))
+    document.getElementById('settings-overlay').classList.remove('open');
+}
+
+// ── INIT ──
+document.addEventListener('DOMContentLoaded', () => {
+  const d = new Date();
+  document.getElementById('today-date').textContent =
+    `${d.getFullYear()}.${String(d.getMonth()+1).padStart(2,'0')}.${String(d.getDate()).padStart(2,'0')}`;
+  loadFromSheets();
+});
+</script>
+</body>
+</html>

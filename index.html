@@ -748,18 +748,42 @@ function setLoading(on) {
 }
 
 // ── GOOGLE SHEETS API ──
-async function apiGet() {
-  const res = await fetch(API_URL + '?t=' + Date.now(), {
-    cache: 'no-store',
-    headers: { 'Cache-Control': 'no-cache' }
+function apiGet() {
+  return new Promise((resolve, reject) => {
+    const callbackName = 'cb_' + Date.now();
+    const script = document.createElement('script');
+    script.src = API_URL + '?t=' + Date.now() + '&callback=' + callbackName;
+    window[callbackName] = (data) => {
+      delete window[callbackName];
+      document.body.removeChild(script);
+      resolve(data.data || []);
+    };
+    script.onerror = () => {
+      delete window[callbackName];
+      document.body.removeChild(script);
+      reject(new Error('fetch failed'));
+    };
+    document.body.appendChild(script);
   });
-  const json = await res.json();
-  return json.data || [];
 }
 
 async function apiAction(params) {
-  const url = API_URL + '?' + new URLSearchParams(params).toString();
-  await fetch(url);
+  return new Promise((resolve) => {
+    const callbackName = 'cb_' + Date.now();
+    const script = document.createElement('script');
+    script.src = API_URL + '?' + new URLSearchParams({...params, callback: callbackName}).toString();
+    window[callbackName] = () => {
+      delete window[callbackName];
+      document.body.removeChild(script);
+      resolve();
+    };
+    script.onerror = () => {
+      delete window[callbackName];
+      document.body.removeChild(script);
+      resolve();
+    };
+    document.body.appendChild(script);
+  });
 }
 
 // ── LOAD FROM SHEETS ──

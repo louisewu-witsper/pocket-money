@@ -749,7 +749,10 @@ function setLoading(on) {
 
 // ── GOOGLE SHEETS API ──
 async function apiGet() {
-  const res = await fetch(API_URL + '?t=' + Date.now());
+  const res = await fetch(API_URL + '?t=' + Date.now(), {
+    cache: 'no-store',
+    headers: { 'Cache-Control': 'no-cache' }
+  });
   const json = await res.json();
   return json.data || [];
 }
@@ -1025,6 +1028,15 @@ document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('today-date').textContent =
     `${d.getFullYear()}.${String(d.getMonth()+1).padStart(2,'0')}.${String(d.getDate()).padStart(2,'0')}`;
   loadFromSheets();
+  // Auto-refresh every 30 seconds
+  setInterval(async () => {
+    try {
+      const rows = await apiGet();
+      populateState(rows);
+      render('henry');
+      render('stanley');
+    } catch(e) {}
+  }, 30000);
 });
 </script>
 </body>
